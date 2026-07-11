@@ -3,10 +3,19 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ppocr_lite"
+name = "ppocr-lite-v6"
 version = "0.6.0"
-description = "Lightweight PP-OCR runtime (v5 + v6 support)"
+description = "Lightweight PP-OCR runtime (PP-OCRv5 + PP-OCRv6 support)"
 requires-python = ">=3.10"
+license = { text = "GPL-3.0" }
+authors = [
+    { name = "gowithwind" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "numpy",
     "onnxruntime",

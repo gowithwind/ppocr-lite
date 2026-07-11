@@ -4,7 +4,7 @@ No OpenCV, no deep-learning framework required.
 
 Typical usage::
 
-    from ppocr_lite import PPOCRLite
+    from ppocr_lite_v6 import PPOCRLite
 
     ocr = PPOCRLite()          # auto-downloads models on first run
     results = ocr("screenshot.png")

@@ -5,7 +5,7 @@ from typing import List, Tuple
 import numpy as np
 from PIL import Image
 
-from ppocr_lite.utils import log_perf
+from ppocr_lite_v6.utils import log_perf
 
 
 # ---------------------------------------------------------------------------

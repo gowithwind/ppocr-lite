@@ -1,7 +1,7 @@
 import difflib
 from typing import Iterator
 
-from ppocr_lite.structs import OCRResult, BBox
+from ppocr_lite_v6.structs import OCRResult, BBox
 
 
 def arrange_text(words: list[OCRResult], line_cy_threshold: float = 0.2,

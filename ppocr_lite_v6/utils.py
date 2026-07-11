@@ -12,7 +12,7 @@ from typing import List, Tuple, Union
 import numpy as np
 from PIL import Image
 
-from ppocr_lite.structs import BBox
+from ppocr_lite_v6.structs import BBox
 
 ImageInput = Union[str, Path, np.ndarray, "Image.Image"]
 
