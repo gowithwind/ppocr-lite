@@ -17,10 +17,22 @@ _DET_URL = "https://huggingface.co/ilaylow/PP_OCRv5_mobile_onnx/resolve/main/ppo
 _REC_URL = "https://huggingface.co/ilaylow/PP_OCRv5_mobile_onnx/resolve/main/ppocrv5_rec.onnx?download=true"
 _DICT_URL = "https://huggingface.co/monkt/paddleocr-onnx/resolve/main/languages/chinese/dict.txt?download=true"
 
-# PP-OCRv6 tiny model URLs
-_DET_V6_URL = "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_tiny_det.onnx"
-_REC_V6_URL = "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_tiny_rec.onnx"
-_DICT_V6_URL = "https://raw.githubusercontent.com/drmhse/paddle-paddle-v6-ocr-rust/main/models/PP-OCRv6_tiny_rec/charset.txt"
+# PP-OCRv6 model URLs (from drmhse/paddle-paddle-v6-ocr-rust)
+_DET_V6_URLS = {
+    "tiny":   "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_tiny_det.onnx",
+    "small":  "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_small_det.onnx",
+    "medium": "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_medium_det.onnx",
+}
+_REC_V6_URLS = {
+    "tiny":   "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_tiny_rec.onnx",
+    "small":  "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_small_rec.onnx",
+    "medium": "https://cdn.drmhse.com/models/ocr-ppocrv6/v1/PP-OCRv6_medium_rec.onnx",
+}
+_DICT_V6_URLS = {
+    "tiny":   "https://raw.githubusercontent.com/drmhse/paddle-paddle-v6-ocr-rust/main/models/PP-OCRv6_tiny_rec/charset.txt",
+    "small":  "https://raw.githubusercontent.com/drmhse/paddle-paddle-v6-ocr-rust/main/models/PP-OCRv6_small_rec/charset.txt",
+    "medium": "https://raw.githubusercontent.com/drmhse/paddle-paddle-v6-ocr-rust/main/models/PP-OCRv6_medium_rec/charset.txt",
+}
 
 _cache_dir = Path.home() / ".cache" / "ppocr_lite"
 
@@ -47,6 +59,9 @@ class ModelConfig:
     model_version:
         ``"v5"`` or ``"v6"``.  Controls which models are auto-downloaded
         when *det_model* / *rec_model* are not set.
+    v6_size:
+        When *model_version* is ``"v6"``, selects model size:
+        ``"tiny"`` (default), ``"small"``, or ``"medium"``.
     """
 
     det_model: Path | None = None
@@ -55,6 +70,7 @@ class ModelConfig:
     dict_path: Path | None = None
     cache_dir: Path = field(default_factory=lambda: _cache_dir)
     model_version: str = "v5"
+    v6_size: str = "tiny"
 
     def resolve(self) -> "ModelConfig":
         """Return a copy with all ``None`` paths replaced by downloaded files."""
@@ -62,9 +78,13 @@ class ModelConfig:
         cache.mkdir(parents=True, exist_ok=True)
 
         if self.model_version == "v6":
-            det = self.det_model or _ensure(_DET_V6_URL, cache, "ppocrv6_det.onnx")
-            rec = self.rec_model or _ensure(_REC_V6_URL, cache, "ppocrv6_rec.onnx")
-            dic = self.dict_path or _ensure(_DICT_V6_URL, cache, "charset_v6_tiny.txt")
+            size = self.v6_size
+            det_url = _DET_V6_URLS[size]
+            rec_url = _REC_V6_URLS[size]
+            dict_url = _DICT_V6_URLS[size]
+            det = self.det_model or _ensure(det_url, cache, f"ppocrv6_{size}_det.onnx")
+            rec = self.rec_model or _ensure(rec_url, cache, f"ppocrv6_{size}_rec.onnx")
+            dic = self.dict_path or _ensure(dict_url, cache, f"charset_v6_{size}.txt")
         else:
             det = self.det_model or _ensure(_DET_URL, cache)
             rec = self.rec_model or _ensure(_REC_URL, cache)
@@ -82,6 +102,7 @@ class ModelConfig:
             cls_model=cls,
             cache_dir=cache,
             model_version=self.model_version,
+            v6_size=self.v6_size,
         )
 
 
@@ -159,7 +180,9 @@ def _ensure(url: str, cache_dir: Path, name: str | None = None) -> Path:
 def _download(url: str, dest: Path) -> None:
     tmp = dest.with_suffix(".tmp")
     try:
-        with urllib.request.urlopen(url, timeout=120) as resp, open(tmp, "wb") as fh:
+        req = urllib.request.Request(url)
+        req.add_header("User-Agent", "Mozilla/5.0 (compatible; ppocr_lite)")
+        with urllib.request.urlopen(req, timeout=120) as resp, open(tmp, "wb") as fh:
             total = int(resp.headers.get("Content-Length", 0))
             downloaded = 0
             chunk = 1 << 20  # 1 MiB
