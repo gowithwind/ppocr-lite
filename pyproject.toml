@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ppocr_lite"
+version = "0.6.0"
+description = "Lightweight PP-OCR runtime (v5 + v6 support)"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "onnxruntime",
+    "Pillow",
+]
